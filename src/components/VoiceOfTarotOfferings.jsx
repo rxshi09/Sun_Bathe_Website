@@ -15,7 +15,7 @@ const VoiceOfTarotOfferings = () => {
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [bookedServices, setBookedServices] = useState([]);
 
-  const BACKEND_URL = "http://localhost:5000";
+  const BACKEND_URL = "";
 
   // --- DATA CONFIGURATION ---
   const events = [
