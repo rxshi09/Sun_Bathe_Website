@@ -239,20 +239,27 @@ app.use(express.json());
 
 // 3. CORS Configuration
 // This ensures your frontend can actually talk to this API
+// --- Updated CORS Section in api/index.js ---
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL, // e.g., https://sun-bathe-website.vercel.app
   'http://localhost:5173',
-  'http://localhost:3000',
-  'http://localhost:3001'
+  'http://localhost:3000'
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps)
+    // 1. Allow internal Vercel calls (no origin)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+    
+    // 2. Allow your specific domains
+    const isAllowed = allowedOrigins.includes(origin) || 
+                     origin.endsWith('.vercel.app'); // Allows all your vercel preview deployments
+
+    if (isAllowed || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
+      console.error(`CORS Blocked: Origin ${origin} not in allowed list`);
       callback(new Error('Not allowed by CORS'));
     }
   },
