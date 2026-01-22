@@ -278,39 +278,104 @@ const VoiceOfTarotOfferings = () => {
         )}
       </AnimatePresence>
 
-      {/* SUCCESS SCREENS - NO CHANGE IN LOGIC, JUST REFINED SPACING */}
+      {/* POST-PAYMENT & CALENDLY OVERLAY WITH SUCCESS SCREEN */}
       <AnimatePresence>
         {paymentSuccess && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-[120] bg-white flex flex-col h-[100dvh]">
-            {!isFullyComplete ? (
-              <>
-                <div className="p-4 md:p-8 border-b flex justify-between items-center bg-[#FAF9F6] shrink-0">
-                  <div className="flex items-center gap-3 md:gap-6">
-                    <div className="flex items-center justify-center w-10 h-10 bg-white border rounded-full md:w-14 md:h-14"><CalendarCheck size={18} /></div>
-                    <div><h4 className="font-serif text-lg md:text-2xl">Confirm Slot</h4></div>
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            className="fixed inset-0 z-[120] bg-white flex flex-col h-[100dvh] overflow-hidden"
+          >
+            {/* STEP INDICATOR HEADER - Only show when not fully complete */}
+            {!isFullyComplete && (
+              <div className="px-6 py-4 md:px-8 md:py-6 border-b border-stone-100 flex justify-between items-center bg-[#FAF9F6] shrink-0">
+                <div className="flex items-center gap-4 md:gap-6">
+                  <div className="items-center justify-center hidden w-12 h-12 bg-white border rounded-full sm:flex border-stone-200">
+                    <CalendarCheck className="text-stone-900" size={20} />
                   </div>
-                  <div className="text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-stone-900 text-white rounded-full">Step 2</div>
-                </div>
-                <div className="flex-grow bg-white">
-                  <iframe src={`${paymentDetails?.calendlyUrl}?name=${encodeURIComponent(paymentDetails?.userName || '')}&email=${encodeURIComponent(paymentDetails?.userEmail || '')}`} width="100%" height="100%" frameBorder="0" title="Calendly"></iframe>
-                </div>
-              </>
-            ) : (
-              <div className="flex-grow flex items-center justify-center bg-[#FAF9F6] p-6 md:p-8">
-                <div className="max-w-xl space-y-8 text-center md:space-y-12">
-                  <div className="relative flex justify-center">
-                    <svg className="w-24 h-24 transform -rotate-90 md:w-40 md:h-40">
-                      <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" strokeWidth="2" fill="none" />
-                      <motion.circle cx="50%" cy="50%" r="45%" stroke="#1c1c1c" strokeWidth="2" fill="none" strokeDasharray="100%" animate={{ strokeDashoffset: `${100 - (100 * countdown / 8)}%` }} transition={{ duration: 1, ease: 'linear' }} />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center"><PartyPopper size={32} className="text-stone-900 animate-bounce" /></div>
+                  <div>
+                    <h4 className="font-serif text-xl md:text-2xl">Confirm Your Slot</h4>
+                    <p className="text-[9px] md:text-[10px] uppercase tracking-widest text-stone-400 font-bold">
+                      Secure ID: {paymentDetails?.paymentId?.slice(-12)}
+                    </p>
                   </div>
-                  <h2 className="font-serif text-4xl md:text-6xl">Blessings, <span className="italic">{paymentDetails?.userName.split(' ')[0]}</span>.</h2>
-                  <p className="text-sm font-light md:text-lg text-stone-500">Your portal is open. Check your inbox for the invitation.</p>
-                  <button onClick={() => { setPaymentSuccess(false); setIsFullyComplete(false); }} className="text-[10px] font-bold uppercase tracking-[0.3em] border-b border-stone-900 pb-1">Return ({countdown}s)</button>
+                </div>
+                <div className="flex items-center gap-3 text-[10px] font-bold uppercase tracking-widest px-4 py-2 bg-stone-900 text-white rounded-full">
+                  Step 2: Scheduling
                 </div>
               </div>
             )}
+
+            <div className="relative flex-grow bg-white">
+              {/* CALENDLY IFRAME - Hidden when complete */}
+              {!isFullyComplete ? (
+                <iframe
+                  src={`${paymentDetails?.calendlyUrl}?embed_domain=${encodeURIComponent(window.location.hostname)}&embed_type=Inline&hide_event_type_details=1&hide_gdpr_banner=1&primary_color=1c1c1c&text_color=1c1c1c&name=${encodeURIComponent(paymentDetails?.userName || '')}&email=${encodeURIComponent(paymentDetails?.userEmail || '')}`}
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  title="Calendly"
+                ></iframe>
+              ) : (
+                /* SUCCESS SCREEN - Shows after Calendly booking */
+                <div className="absolute inset-0 z-[130] bg-[#FAF9F6] flex items-center justify-center p-6 animate-in fade-in zoom-in duration-500">
+                  <div className="w-full max-w-2xl space-y-10 text-center">
+                    <div className="flex justify-center">
+                      <div className="relative">
+                        {/* Circular Timer Visual */}
+                        <svg className="w-32 h-32 transform -rotate-90">
+                          <circle 
+                            cx="64" cy="64" r="60" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            fill="transparent" 
+                            className="text-stone-200" 
+                          />
+                          <circle 
+                            cx="64" cy="64" r="60" 
+                            stroke="currentColor" 
+                            strokeWidth="2" 
+                            fill="transparent" 
+                            strokeDasharray="377" 
+                            strokeDashoffset={377 - (377 * countdown / 8)}
+                            className="transition-all duration-1000 ease-linear text-stone-900" 
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <PartyPopper size={40} className="text-stone-900 animate-bounce" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <p className="text-[11px] uppercase tracking-[0.5em] text-stone-400 font-bold">
+                        Enrollment Complete
+                      </p>
+                      <h2 className="font-serif text-5xl tracking-tight md:text-6xl">
+                        Thank You, <span className="italic">{paymentDetails?.userName.split(' ')[0]}.</span>
+                      </h2>
+                      <p className="max-w-md mx-auto leading-relaxed text-stone-500">
+                        Your session for <span className="font-semibold text-stone-900">{paymentDetails?.title}</span> has been confirmed. 
+                        A calendar invitation has been sent to <span className="underline">{paymentDetails?.userEmail}</span>.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-6 pt-10">
+                      <div className="h-[1px] w-20 bg-stone-200" />
+                      <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400 font-medium">
+                        Returning to home screen in <span className="text-sm font-bold text-stone-900">{countdown}</span> seconds
+                      </p>
+                      <button 
+                        onClick={() => { setPaymentSuccess(false); setIsFullyComplete(false); setCountdown(8); }}
+                        className="text-[11px] font-bold uppercase tracking-widest border-b border-stone-900 pb-1 hover:text-stone-400 hover:border-stone-400 transition-colors"
+                      >
+                        Return Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
