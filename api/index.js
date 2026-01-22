@@ -225,130 +225,64 @@ import crypto from 'crypto';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 
-// 1. Initialize Configuration
 dotenv.config();
 const app = express();
 
-// 2. Security Middleware
-app.use(helmet({ 
-  crossOriginResourcePolicy: false 
-}));
-
-// Body parser - Vercel handles limits, but we keep it clean
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json());
 
-// 3. CORS Configuration
-// This ensures your frontend can actually talk to this API
-// --- Updated CORS Section in api/index.js ---
-
+// Multi-environment CORS logic
 const allowedOrigins = [
   process.env.FRONTEND_URL, // e.g., https://sun-bathe-website.vercel.app
-  'http://localhost:5173',
-  'http://localhost:3000'
+  'http://localhost:5173'
 ].filter(Boolean);
 
 app.use(cors({
   origin: (origin, callback) => {
-    // 1. Allow internal Vercel calls (no origin)
-    if (!origin) return callback(null, true);
-    
-    // 2. Allow your specific domains
-    const isAllowed = allowedOrigins.includes(origin) || 
-                     origin.endsWith('.vercel.app'); // Allows all your vercel preview deployments
-
-    if (isAllowed || process.env.NODE_ENV !== 'production') {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
-      console.error(`CORS Blocked: Origin ${origin} not in allowed list`);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: true
 }));
 
-// 4. Initialize Razorpay
-// Ensure these keys are added to Vercel Environment Variables
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// 5. Routes
-
-// Health Check (useful for testing if the API is alive)
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK', message: 'Server is running' });
-});
-
-// Route: Create Order
+// Create Order
 app.post('/api/create-order', async (req, res) => {
   try {
-    const { amount, serviceId } = req.body;
-
-    // Validation: Ensure amount is one of your predefined prices
-    const VALID_PRICES = [2100, 3500, 5000, 4999];
-    if (!amount || !VALID_PRICES.includes(amount)) {
-      return res.status(400).json({ 
-        error: `Invalid amount: ${amount}. Payment rejected for security.` 
-      });
-    }
-
-    const options = {
-      amount: amount * 100, // Razorpay works in paise
+    const { amount } = req.body;
+    const order = await razorpay.orders.create({
+      amount: amount * 100, // Razorpay expects paise
       currency: "INR",
-      receipt: `rcpt_${Date.now()}`,
-      notes: {
-        serviceId: serviceId || 'tarot_session'
-      }
-    };
-
-    const order = await razorpay.orders.create(options);
-    
-    // Return order details + your public Key ID to the frontend
-    res.status(200).json({
-      id: order.id,
-      currency: order.currency,
-      amount: order.amount,
-      key_id: process.env.RAZORPAY_KEY_ID 
+      receipt: `rcpt_${Date.now()}`
     });
-
-  } catch (error) {
-    console.error('Razorpay Order Error:', error);
-    res.status(500).json({ error: 'Failed to create order with payment gateway' });
+    // We send back the key_id so the frontend knows which key to use
+    res.status(200).json({ ...order, key_id: process.env.RAZORPAY_KEY_ID });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Route: Verify Payment
+// Verify Payment
 app.post('/api/verify-payment', async (req, res) => {
-  try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+  const sign = razorpay_order_id + "|" + razorpay_payment_id;
+  const expectedSign = crypto
+    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+    .update(sign.toString())
+    .digest("hex");
 
-    // Verify signature logic
-    const sign = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSign = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(sign.toString())
-      .digest("hex");
-
-    if (razorpay_signature === expectedSign) {
-      return res.status(200).json({ 
-        success: true, 
-        message: "Payment verified successfully" 
-      });
-    } else {
-      return res.status(400).json({ 
-        success: false, 
-        message: "Signature verification failed" 
-      });
-    }
-  } catch (error) {
-    console.error('Verification Error:', error);
-    res.status(500).json({ error: 'Internal server error during verification' });
+  if (razorpay_signature === expectedSign) {
+    res.status(200).json({ success: true });
+  } else {
+    res.status(400).json({ success: false });
   }
 });
 
-// 6. Export for Vercel Serverless
-// This is critical. Do NOT use app.listen()
-export default app;
+export default app; // Required for Vercel
