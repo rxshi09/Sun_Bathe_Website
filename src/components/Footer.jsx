@@ -21,7 +21,7 @@ const Footer = () => {
                 <span className="font-serif text-xl font-bold text-white">V</span>
               </div>
               <span className="font-serif text-xl font-bold tracking-wide uppercase text-stone-900">
-                VoiceOfTarot
+                SoundOfTarot
               </span>
             </div>
             <p className="text-sm leading-relaxed text-stone-500">

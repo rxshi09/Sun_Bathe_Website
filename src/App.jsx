@@ -212,14 +212,6 @@ import Footer from "./components/Footer";
 //   );
 // };
 
-
-
-
-
-
-
-
-
 function App() {
   return (
     <div className="font-sans bg-stone-50 text-stone-900 selection:bg-amber-200 selection:text-amber-900">
@@ -231,6 +223,7 @@ function App() {
       <VoiceOfTarotOfferings />
       <Testimonials />
       <Gallery />
+
       {/* <PaymentSection /> */}
       <ProfessionalQA />
       <Footer />

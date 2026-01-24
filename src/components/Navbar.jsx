@@ -32,7 +32,7 @@ const Navbar = () => {
     { name: 'Offerings', href: 'offerings' },
     { name: 'Gallery', href: 'gallery' },
   ];
-
+  
   return (
     <nav className="fixed top-0 z-50 w-full border-b bg-stone-50/90 backdrop-blur-md border-stone-200">
       <div className="px-6 mx-auto max-w-7xl lg:px-8">
@@ -44,7 +44,7 @@ const Navbar = () => {
               <span className="font-serif text-xl font-bold text-white">V</span>
             </div>
             <span className="font-serif text-xl font-bold tracking-wide uppercase text-stone-900">
-              VoiceOfTarot
+              SoundOfTarot
             </span>
           </div>
         
@@ -68,7 +68,7 @@ const Navbar = () => {
               Reserve Seat
             </button>
           </div>
-
+          
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <button

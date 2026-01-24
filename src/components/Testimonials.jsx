@@ -1,107 +1,75 @@
-import React, { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Star, Quote } from 'lucide-react';
+import React from 'react';
+import { motion } from 'framer-motion';
+import { Star, Quote, Heart, Sparkles, ShieldCheck } from 'lucide-react';
 
 const Testimonials = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const videoRef = useRef(null);
-
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
-
   const reviews = [
     {
-      quote: "Sapna's approach is clinical yet deeply spiritual. She helped me navigate a massive corporate pivot with a clarity I couldn't find in any boardroom.",
+      quote: "Sapna has a way of seeing right into the heart of things. Her tarot sessions brought me a sense of peace and direction I didn't know I was missing.",
       author: "Ananya R.",
-      role: "Creative Director",
+      role: "Creative Soul",
+      icon: <Sparkles className="w-4 h-4" />
     },
     {
-      quote: "The Sunbathe retreat was the first time in years I felt my nervous system actually settle. The solar work is life-changing.",
+      quote: "The sound healing was unlike anything I've experienced. I felt my entire nervous system finally breathe. It's a truly sacred space.",
       author: "Vikram S.",
-      role: "Tech Mentor",
+      role: "Long-time Seeker",
+      icon: <Heart className="w-4 h-4" />
     },
     {
-      quote: "VoiceOfTarot doesn't just give answers; they give you the tools to find your own. An essential experience for any modern leader.",
+      quote: "I came for the curiosity, but stayed for the calm. Sapna creates such a safe container to explore your own thoughts and healing.",
       author: "Priya M.",
-      role: "Strategy Consultant",
+      role: "Wellness Advocate",
+      icon: <ShieldCheck className="w-4 h-4" />
     },
   ];
 
   return (
     <section className="py-24 bg-[#FCFBF8] overflow-hidden">
-      <div className="px-6 mx-auto max-w-7xl">
+      <div className="px-6 mx-auto max-w-7xl lg:px-12">
         
         <div className="grid items-center gap-16 lg:grid-cols-2">
           
-          {/* LEFT: THE CURVY VIDEO PLAYER */}
-          <div className="relative group">
-            {/* Organic Background Blobs for Depth */}
-            <div className="absolute w-64 h-64 rounded-full -top-10 -left-10 bg-amber-100/50 blur-3xl animate-pulse" />
-            <div className="absolute rounded-full -bottom-10 -right-10 w-80 h-80 bg-stone-200/40 blur-3xl" />
-
-            {/* The Main Curvy Video Container */}
+          {/* LEFT: ENGAGING IMAGE COMPOSITION */}
+          <div className="relative">
+            {/* Organic Background Blobs */}
+            <div className="absolute w-64 h-64 rounded-full -top-10 -left-10 bg-amber-100/40 blur-3xl" />
+            
+            {/* Main Image Container with Blob Shape */}
             <motion.div 
               initial={{ borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%" }}
-              animate={{ 
-                borderRadius: isPlaying 
-                  ? "24px" 
-                  : "60% 40% 30% 70% / 60% 30% 70% 40%" 
-              }}
-              transition={{ duration: 1.5, ease: "circOut" }}
-              className="relative overflow-hidden border shadow-2xl aspect-square md:aspect-video lg:aspect-square border-stone-200 bg-stone-900"
+              whileInView={{ borderRadius: "40% 60% 70% 30% / 40% 50% 60% 70%" }}
+              transition={{ duration: 8, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+              className="relative z-10 overflow-hidden border-8 border-white shadow-2xl aspect-square bg-stone-200"
             >
-              <video
-                ref={videoRef}
-                src="https://www.w3schools.com/html/mov_bbb.mp4" // Placeholder video
-                className="object-cover w-full h-full"
-                poster="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000"
-                onEnded={() => setIsPlaying(false)}
+              <img 
+                src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2000&auto=format&fit=crop" 
+                alt="Healing Session" 
+                className="object-cover w-full h-full scale-110"
               />
-
-              {/* Aesthetic Play Overlay */}
-              <AnimatePresence>
-                {!isPlaying && (
-                  <motion.div 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="absolute inset-0 flex flex-col items-center justify-center bg-stone-900/40 backdrop-blur-[2px] cursor-pointer"
-                    onClick={togglePlay}
-                  >
-                    <motion.div 
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-xl text-stone-900"
-                    >
-                      <Play fill="currentColor" size={28} className="ml-1" />
-                    </motion.div>
-                    <p className="mt-4 font-serif text-xs italic tracking-widest text-white uppercase">
-                      Watch His Story
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <div className="absolute inset-0 bg-amber-900/5 mix-blend-multiply" />
             </motion.div>
 
-            {/* Floating Quote Tag */}
+            {/* Floating People/Trust Badge */}
             <motion.div 
-              initial={{ x: -20, opacity: 0 }}
+              initial={{ x: 20, opacity: 0 }}
               whileInView={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="absolute -bottom-6 -left-6 bg-white p-6 shadow-xl border border-stone-100 hidden md:block max-w-[200px] z-20"
+              className="absolute z-20 flex items-center gap-4 p-5 bg-white border shadow-2xl bottom-10 -right-4 rounded-2xl border-stone-50"
             >
-              <div className="flex text-amber-500 mb-2 gap-0.5">
-                {[...Array(5)].map((_, i) => <Star key={i} size={10} fill="currentColor" />)}
+              <div className="flex -space-x-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="w-10 h-10 overflow-hidden border-2 border-white rounded-full bg-stone-200">
+                    <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="client" />
+                  </div>
+                ))}
               </div>
-              <p className="text-[10px] uppercase tracking-tighter font-bold text-stone-400">Trusted Guidance</p>
+              <div>
+                <div className="flex text-amber-500 gap-0.5 mb-1">
+                  {[...Array(5)].map((_, i) => <Star key={i} size={10} fill="currentColor" />)}
+                </div>
+                <p className="text-[10px] uppercase tracking-widest font-bold text-stone-400">Trusted by 1k+</p>
+              </div>
             </motion.div>
           </div>
 
@@ -112,71 +80,89 @@ const Testimonials = () => {
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              className="font-serif text-4xl leading-tight md:text-5xl text-stone-900"
+              className="font-serif text-4xl italic font-light leading-tight md:text-5xl text-stone-900"
             >
-              "The clarity I found with Sapna was <span className="italic underline text-stone-500 decoration-amber-200 underline-offset-8">unprecedented</span>."
+              "A journey back to <span className="text-stone-400">myself.</span>"
             </motion.h2>
 
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-lg leading-relaxed text-stone-600"
+              className="text-lg font-light leading-relaxed text-stone-600"
             >
-              As a founder, the noise is constant. This wasn't just a reading; it was a clinical realignment of my purpose and strategy. Sapna bridges the gap between the mystical and the professional in a way that just works.
+              Working with Sapna isn't about looking for magic answers. It’s about the quiet, powerful work of listening to your own soul. Her presence is a gift, and the way she integrates sound and tarot creates a deep emotional safety that I’ve never found elsewhere.
             </motion.p>
 
-            <div className="pt-4 border-t border-stone-100">
-              <h4 className="text-sm font-bold tracking-widest uppercase text-stone-900">Vikram Sethi</h4>
-              <p className="text-xs tracking-wide text-stone-400">Tech Entrepreneur & Mentor</p>
+            <div className="pt-6 border-t border-stone-100">
+              <h4 className="text-sm font-bold tracking-widest uppercase text-stone-900">Sarah Jenkins</h4>
+              <p className="text-xs tracking-wide uppercase text-stone-400">A Quiet Seeker</p>
             </div>
 
-            <div className="flex gap-4">
+            <div>
               <button 
-                onClick={() => {
-                  document.getElementById('offerings')?.scrollIntoView({ behavior: 'smooth' });
-                }} 
-                className="px-8 py-3 text-xs font-bold tracking-widest uppercase transition-all bg-stone-900 text-stone-50 hover:bg-stone-800 hover:shadow-lg active:scale-95"
+                onClick={() => document.getElementById('offerings')?.scrollIntoView({ behavior: 'smooth' })} 
+                className="px-8 py-4 text-[10px] font-bold tracking-[0.3em] uppercase transition-all bg-stone-900 text-stone-50 hover:bg-amber-800 hover:shadow-xl active:scale-95"
               >
-                Book Your Experience
+                Experience the Calm
               </button>
             </div>
           </div>
         </div>
 
         {/* BOTTOM REVIEWS GRID */}
-        <div className="grid gap-8 mt-20 -mb-12 md:grid-cols-3">
-          {reviews.map((rev, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ y: -8, shadow: "0 20px 25px -5px rgb(0 0 0 / 0.1)" }}
-              className="flex flex-col justify-between p-10 transition-all border bg-stone-50 border-stone-100"
-            >
-              <div>
-                <div className="flex gap-1 mb-6 text-amber-600">
-                  {[...Array(5)].map((_, star) => (
-                    <Star key={star} size={14} fill="currentColor" />
-                  ))}
-                </div>
-                <p className="mb-8 font-serif text-lg italic leading-relaxed text-stone-700">
-                  "{rev.quote}"
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-bold tracking-widest uppercase text-stone-900">
-                  {rev.author}
-                </p>
-                <p className="text-xs tracking-wide text-stone-500">
-                  {rev.role}
-                </p>
-              </div>
-            </motion.div>
-          ))}
+        <div className="grid gap-8 mt-24 md:grid-cols-3">
+  {reviews.map((rev, i) => (
+    <motion.div
+      key={i}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: i * 0.1 }}
+      className="flex flex-col justify-between p-10 transition-all bg-white border group border-stone-100 hover:border-amber-200/50 hover:shadow-xl"
+    >
+      <div>
+        <div className="flex items-start justify-between mb-8">
+          {/* Circular Person Icon / Avatar */}
+          <div className="relative">
+            <div className="overflow-hidden transition-colors border-2 rounded-full w-14 h-14 border-stone-50 group-hover:border-amber-100">
+              <img 
+                src={`https://i.pravatar.cc/150?u=${rev.author}`} 
+                alt={rev.author} 
+                className="object-cover w-full h-full"
+              />
+            </div>
+            {/* Small icon badge overlay */}
+            <div className="absolute p-1 bg-white rounded-full shadow-sm -bottom-1 -right-1 text-amber-600">
+               {rev.icon}
+            </div>
+          </div>
+          
+          <div className="flex gap-0.5 text-amber-500/40">
+            {[...Array(5)].map((_, star) => (
+              <Star key={star} size={10} fill="currentColor" />
+            ))}
+          </div>
         </div>
+
+        <p className="mb-8 font-serif text-lg italic font-light leading-relaxed text-stone-600">
+          "{rev.quote}"
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3 pt-6 border-t border-stone-50">
+        <div>
+          <p className="text-[10px] font-bold tracking-widest uppercase text-stone-900">
+            {rev.author}
+          </p>
+          <p className="text-[10px] tracking-wide text-stone-400 uppercase">
+            {rev.role}
+          </p>
+        </div>
+      </div>
+    </motion.div>
+  ))}
+</div>
       </div>
     </section>
   );

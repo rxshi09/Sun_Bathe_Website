@@ -2,12 +2,12 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 const Mentor = () => {
-  // Animation variants for the drawing border
+  // Animation variants for the drawing border (kept exactly as your original)
   const borderVariants = {
     hidden: { pathLength: 0, opacity: 0 },
     visible: { 
       pathLength: 1, 
-      opacity: 1,
+      opacity: 1, 
       transition: { duration: 1.5, ease: "easeInOut", delay: 0.5 }
     }
   };
@@ -17,7 +17,7 @@ const Mentor = () => {
       <div className="px-6 mx-auto max-w-7xl lg:px-8">
         <div className="grid items-center grid-cols-1 gap-12 lg:grid-cols-12">
           
-          {/* Mentor Image (Left) */}
+          {/* Mentor Image (Left) - Height and Border kept exactly as requested */}
           <motion.div 
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -31,21 +31,21 @@ const Mentor = () => {
                 whileInView={{ scale: 1 }}
                 transition={{ duration: 1.5 }}
                 src="/Founder_Image.jpeg"
-                alt="Sapna Shahri - Mentor Portrait"
-                className="object-cover w-full h-full "
+                alt="Sapna Shahri - Intuitive Guide"
+                className="object-cover w-full h-full"
               />
             </div>
 
-            {/* Animated Border Decoration */}
+            {/* Animated Border Decoration (Original logic preserved) */}
             <svg 
               className="absolute w-48 h-48 pointer-events-none -bottom-6 -right-6 -z-0" 
               viewBox="0 0 200 200"
             >
               <motion.path
-                d="M 200 100 V 200 H 100" // Creates an 'L' shape
+                d="M 200 100 V 200 H 100" 
                 fill="transparent"
                 strokeWidth="2"
-                stroke="#d6d3d1" // stone-300
+                stroke="#d6d3d1" 
                 variants={borderVariants}
                 initial="hidden"
                 whileInView="visible"
@@ -53,7 +53,7 @@ const Mentor = () => {
               />
             </svg>
 
-            {/* Subtle floating accent border */}
+            {/* Subtle floating accent border (Original logic preserved) */}
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -73,12 +73,11 @@ const Mentor = () => {
             >
               <div className="mb-8">
                 <h3 className="mb-2 text-sm font-bold tracking-widest uppercase text-amber-700">
-                  The Mentor
+                  Meet Sapna
                 </h3>
-                <h2 className="mb-6 font-serif text-4xl lg:text-5xl text-stone-900">
+                <h2 className="mb-6 font-serif text-4xl italic font-light lg:text-5xl text-stone-900">
                   Sapna Shahri
                 </h2>
-                {/* Animated underline */}
                 <motion.div 
                   initial={{ width: 0 }}
                   whileInView={{ width: 80 }}
@@ -88,20 +87,21 @@ const Mentor = () => {
                 />
               </div>
 
-              <p className="mb-6 text-lg leading-relaxed text-stone-600">
-                As the visionary behind{" "}
-                <span className="font-semibold text-stone-900">VoiceOfTarot</span>
-                , Sapna has spent over a decade guiding individuals by blending
-                ancient esoteric wisdom with modern-day clarity and conscious
-                living.
-              </p>
+              <div className="mb-8 space-y-6">
+                <p className="text-lg font-light leading-relaxed text-stone-600">
+                  Sapna Shahri is an <span className="font-semibold text-stone-900">intuitive tarot guide and certified sound healer</span> with a gentle yet grounded approach to healing.
+                </p>
 
-              <p className="pl-6 mb-8 text-lg italic leading-relaxed border-l-2 text-stone-600 border-amber-700/30">
-                “VoiceOfTarot was born from the need for inner silence in an
-                increasingly noisy world. It is not just about tarot readings, but
-                a space for recalibration — created for leaders, creatives, and
-                seekers.”
-              </p>
+                <p className="text-lg font-light leading-relaxed text-stone-600">
+                  Her work focuses on helping people reconnect with themselves — not by fixing them, but by helping them listen.
+                </p>
+
+                <div className="pl-6 space-y-2 italic font-light border-l-2 border-amber-700/20 text-stone-500">
+                  <p>Through tarot, she brings clarity.</p>
+                  <p>Through sound, she brings calm.</p>
+                  <p>Through presence, she creates safety.</p>
+                </div>
+              </div>
 
               <div className="grid grid-cols-2 gap-8 pt-4">
                 <div>
