@@ -67,7 +67,7 @@ const Footer = () => {
                 Available for Global Consultations.
               </p>
             </div>
-            <button 
+            <button
               onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
               className="mt-8 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-colors"
             >
