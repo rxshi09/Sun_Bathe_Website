@@ -1,222 +1,71 @@
-// require('dotenv').config();
-// const express = require('express');
-// const Razorpay = require('razorpay');
-// const cors = require('cors');
-// const crypto = require('crypto');
-// const helmet = require('helmet');
-// const rateLimit = require('express-rate-limit');
+// import express from 'express';
+// import Razorpay from 'razorpay';
+// import cors from 'cors';
+// import crypto from 'crypto';
+// import helmet from 'helmet';
+// import dotenv from 'dotenv';
 
+// dotenv.config();
 // const app = express();
 
-// // Security middleware
-// app.use(helmet());
-// app.use(express.json({ limit: '10kb' }));
+// app.use(helmet({ crossOriginResourcePolicy: false }));
+// app.use(express.json());
 
-// // CORS configuration - restrict to your frontend domain in production
-// const allowedOrigins = process.env.NODE_ENV === 'production'
-//   ? [process.env.FRONTEND_URL]
-//   : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:3001'];
+// // Multi-environment CORS logic
+// const allowedOrigins = [
+//   process.env.FRONTEND_URL, // e.g., https://sun-bathe-website.vercel.app
+//   'http://localhost:5173'
+// ].filter(Boolean);
 
-// const corsOptions = {
+// app.use(cors({
 //   origin: (origin, callback) => {
-//     // Allow requests with no origin (like mobile apps or curl requests)
-//     if (!origin) return callback(null, true);
-    
-//     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+//     if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
 //       callback(null, true);
 //     } else {
 //       callback(new Error('Not allowed by CORS'));
 //     }
 //   },
-//   optionsSuccessStatus: 200,
 //   credentials: true
-// };
-// app.use(cors(corsOptions));
-
-// // Rate limiting
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 100, // limit each IP to 100 requests per windowMs
-//   message: 'Too many requests from this IP, please try again later.'
-// });
-// app.use('/api/', limiter);
-
-// // Stricter rate limit for payment routes
-// const paymentLimiter = rateLimit({
-//   windowMs: 15 * 60 * 1000,
-//   max: 10,
-//   message: 'Too many payment attempts, please try again later.'
-// });
-
-// // Validate environment variables
-// const requiredEnvVars = ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'PORT'];
-// requiredEnvVars.forEach(varName => {
-//   if (!process.env[varName]) {
-//     console.error(`Missing required environment variable: ${varName}`);
-//     process.exit(1);
-//   }
-// });
+// }));
 
 // const razorpay = new Razorpay({
 //   key_id: process.env.RAZORPAY_KEY_ID,
 //   key_secret: process.env.RAZORPAY_KEY_SECRET,
 // });
 
-// // Input validation middleware
-// const validateOrderCreation = (req, res, next) => {
-//   const { amount } = req.body;
-  
-//   if (!amount || typeof amount !== 'number' || amount <= 0) {
-//     return res.status(400).json({ 
-//       error: 'Invalid amount provided' 
-//     });
-//   }
-
-//   // Validate amount matches expected price (prevent manipulation)
-//   const EXPECTED_AMOUNT = 4999;
-//   if (amount !== EXPECTED_AMOUNT) {
-//     return res.status(400).json({ 
-//       error: 'Invalid payment amount' 
-//     });
-//   }
-
-//   next();
-// };
-
-// const validatePaymentVerification = (req, res, next) => {
-//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  
-//   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-//     return res.status(400).json({ 
-//       error: 'Missing required payment details' 
-//     });
-//   }
-
-//   next();
-// };
-
-// // Health check endpoint
-// app.get('/health', (req, res) => {
-//   res.status(200).json({ status: 'OK' });
-// });
-
-// // 1. Create Order Route
-// app.post('/api/create-order', paymentLimiter, validateOrderCreation, async (req, res) => {
+// // Create Order
+// app.post('/api/create-order', async (req, res) => {
 //   try {
-//     const options = {
-//       amount: req.body.amount * 100, // Amount in paise
+//     const { amount } = req.body;
+//     const order = await razorpay.orders.create({
+//       amount: amount * 100, // Razorpay expects paise
 //       currency: "INR",
-//       receipt: `receipt_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
-//       notes: {
-//         event: 'Sunbathe 2026',
-//         created_at: new Date().toISOString()
-//       }
-//     };
-
-//     const order = await razorpay.orders.create(options);
-    
-//     // Log order creation (use proper logging service in production)
-//     console.log(`Order created: ${order.id} at ${new Date().toISOString()}`);
-    
-//     res.json({
-//       id: order.id,
-//       currency: order.currency,
-//       amount: order.amount,
-//       key_id: process.env.RAZORPAY_KEY_ID 
+//       receipt: `rcpt_${Date.now()}`
 //     });
-//   } catch (error) {
-//     console.error('Order creation error:', error);
-//     res.status(500).json({ 
-//       error: 'Failed to create order. Please try again.' 
-//     });
+//     // We send back the key_id so the frontend knows which key to use
+//     res.status(200).json({ ...order, key_id: process.env.RAZORPAY_KEY_ID });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
 //   }
 // });
 
-// // 2. Verification Route
-// app.post('/api/verify-payment', paymentLimiter, validatePaymentVerification, async (req, res) => {
-//   try {
-//     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+// // Verify Payment
+// app.post('/api/verify-payment', async (req, res) => {
+//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+//   const sign = razorpay_order_id + "|" + razorpay_payment_id;
+//   const expectedSign = crypto
+//     .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+//     .update(sign.toString())
+//     .digest("hex");
 
-//     const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
-//     hmac.update(razorpay_order_id + "|" + razorpay_payment_id);
-//     const generated_signature = hmac.digest('hex');
-
-//     if (generated_signature === razorpay_signature) {
-//       // Optionally: Fetch payment details from Razorpay to verify status
-//       try {
-//         const payment = await razorpay.payments.fetch(razorpay_payment_id);
-        
-//         if (payment.status === 'captured' || payment.status === 'authorized') {
-//           // Log successful payment
-//           console.log(`Payment verified: ${razorpay_payment_id} at ${new Date().toISOString()}`);
-          
-//           // TODO: Save payment details to database
-//           // TODO: Send confirmation email
-          
-//           res.json({ 
-//             success: true, 
-//             message: "Payment verified successfully",
-//             payment_id: razorpay_payment_id
-//           });
-//         } else {
-//           res.status(400).json({ 
-//             success: false, 
-//             message: "Payment not completed" 
-//           });
-//         }
-//       } catch (fetchError) {
-//         console.error('Error fetching payment details:', fetchError);
-//         res.status(500).json({ 
-//           success: false, 
-//           message: "Verification error" 
-//         });
-//       }
-//     } else {
-//       console.warn(`Invalid signature attempt: ${razorpay_payment_id}`);
-//       res.status(400).json({ 
-//         success: false, 
-//         message: "Invalid signature" 
-//       });
-//     }
-//   } catch (error) {
-//     console.error('Payment verification error:', error);
-//     res.status(500).json({ 
-//       success: false, 
-//       message: "Verification failed" 
-//     });
+//   if (razorpay_signature === expectedSign) {
+//     res.status(200).json({ success: true });
+//   } else {
+//     res.status(400).json({ success: false });
 //   }
 // });
 
-// // 404 handler
-// app.use((req, res) => {
-//   res.status(404).json({ error: 'Route not found' });
-// });
-
-// // Global error handler
-// app.use((err, req, res, next) => {
-//   console.error('Unhandled error:', err);
-//   res.status(500).json({ 
-//     error: 'Internal server error' 
-//   });
-// });
-
-// const PORT = process.env.PORT || 5000;
-
-// const server = app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-//   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-// });
-
-// // Graceful shutdown
-// process.on('SIGTERM', () => {
-//   console.log('SIGTERM received, closing server gracefully');
-//   server.close(() => {
-//     console.log('Server closed');
-//     process.exit(0);
-//   });
-// });
-
-// module.exports = app;
+// export default app; // Required for Vercel
 
 import express from 'express';
 import Razorpay from 'razorpay';
@@ -224,65 +73,151 @@ import cors from 'cors';
 import crypto from 'crypto';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 const app = express();
 
+// --- 1. SCHEMAS ---
+const slotSchema = new mongoose.Schema({
+  serviceId: { type: String, required: true },
+  startTime: { type: Date, required: true },
+  isBooked: { type: Boolean, default: false },
+  lockedUntil: { type: Date, default: null },
+});
+
+const bookingSchema = new mongoose.Schema({
+  userName: String,
+  userEmail: String,
+  serviceName: String,
+  slotId: { type: mongoose.Schema.Types.ObjectId, ref: 'Slot' },
+  paymentId: String,
+  orderId: String,
+  amount: Number,
+  bookedAt: { type: Date, default: Date.now }
+});
+
+const Slot = mongoose.models.Slot || mongoose.model('Slot', slotSchema);
+const Booking = mongoose.models.Booking || mongoose.model('Booking', bookingSchema);
+
+// --- 2. DB CONNECTION ---
+const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) return;
+  try {
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log("🌿 MongoDB Connected");
+  } catch (err) { console.error("❌ MongoDB Error:", err); }
+};
+
+// --- 3. EMAIL CONFIG (UPDATED FOR GMAIL/SPIT) ---
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS, // USE THE 16-CHAR APP PASSWORD
+  },
+});
+
+// Verify connection on start
+transporter.verify((error) => {
+  if (error) console.log("❌ Email Auth failed: Use an App Password!");
+  else console.log("📧 Email Server Ready");
+});
+
+const sendConfirmationEmail = async (booking, slot) => {
+  const dateStr = new Date(slot.startTime).toLocaleString('en-IN', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+  
+  const mailOptions = {
+    from: `"Voice of Tarot" <${process.env.EMAIL_USER}>`,
+    to: [booking.userEmail, process.env.ADMIN_EMAIL],
+    subject: `Booking Confirmed: ${booking.serviceName}`,
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+        <h2 style="color: #111;">Session Confirmed!</h2>
+        <p>Hi <b>${booking.userName}</b>,</p>
+        <p>Your 1:1 session for <b>${booking.serviceName}</b> is successfully booked.</p>
+        <div style="background: #f4f4f4; padding: 15px; border-radius: 5px;">
+          <p><b>Date/Time:</b> ${dateStr}</p>
+          <p><b>Payment ID:</b> ${booking.paymentId}</p>
+        </div>
+        <p style="margin-top: 20px; font-size: 12px; color: #888;">Voice of Tarot Guidance</p>
+      </div>
+    `
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("📧 Email sent to " + booking.userEmail);
+  } catch (err) { console.error("📧 Email failed:", err.message); }
+};
+
+// --- 4. MIDDLEWARE ---
 app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json());
-
-// Multi-environment CORS logic
-const allowedOrigins = [
-  process.env.FRONTEND_URL, // e.g., https://sun-bathe-website.vercel.app
-  'http://localhost:5173'
-].filter(Boolean);
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true
-}));
+app.use(cors());
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// Create Order
-app.post('/api/create-order', async (req, res) => {
+// --- 5. ROUTES ---
+
+app.post('/api/admin/create-slots', async (req, res) => {
+  await connectDB();
   try {
-    const { amount } = req.body;
-    const order = await razorpay.orders.create({
-      amount: amount * 100, // Razorpay expects paise
-      currency: "INR",
-      receipt: `rcpt_${Date.now()}`
-    });
-    // We send back the key_id so the frontend knows which key to use
-    res.status(200).json({ ...order, key_id: process.env.RAZORPAY_KEY_ID });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+    const { serviceId, dates } = req.body; 
+    const slotObjects = dates.map(d => ({ serviceId, startTime: new Date(d) }));
+    await Slot.insertMany(slotObjects);
+    res.status(201).json({ success: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// Verify Payment
+app.get('/api/slots/:serviceId', async (req, res) => {
+  await connectDB();
+  try {
+    const slots = await Slot.find({ serviceId: req.params.serviceId, isBooked: false, $or: [{ lockedUntil: null }, { lockedUntil: { $lt: new Date() } }] }).sort({ startTime: 1 });
+    res.json(slots);
+  } catch (err) { res.status(500).json([]); }
+});
+
+app.post('/api/lock-slot', async (req, res) => {
+  await connectDB();
+  const lockExpiry = new Date(Date.now() + 10 * 60 * 1000);
+  const slot = await Slot.findOneAndUpdate({ _id: req.body.slotId, isBooked: false, $or: [{ lockedUntil: null }, { lockedUntil: { $lt: new Date() } }] }, { lockedUntil: lockExpiry }, { new: true });
+  res.json({ success: !!slot });
+});
+
+app.post('/api/create-order', async (req, res) => {
+  const order = await razorpay.orders.create({ amount: req.body.amount * 100, currency: "INR", receipt: `rcpt_${Date.now()}` });
+  res.json({ ...order, key_id: process.env.RAZORPAY_KEY_ID });
+});
+
 app.post('/api/verify-payment', async (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-  const sign = razorpay_order_id + "|" + razorpay_payment_id;
-  const expectedSign = crypto
-    .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-    .update(sign.toString())
-    .digest("hex");
+  await connectDB();
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, slotId, userDetails, serviceName, amount } = req.body;
+    const expectedSign = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET).update(razorpay_order_id + "|" + razorpay_payment_id).digest("hex");
 
-  if (razorpay_signature === expectedSign) {
-    res.status(200).json({ success: true });
-  } else {
-    res.status(400).json({ success: false });
-  }
+    if (razorpay_signature === expectedSign) {
+      const slot = await Slot.findByIdAndUpdate(slotId, { isBooked: true, lockedUntil: null }, { new: true });
+      const newBooking = new Booking({ userName: userDetails.name, userEmail: userDetails.email, serviceName, slotId, paymentId: razorpay_payment_id, orderId: razorpay_order_id, amount });
+      await newBooking.save();
+      
+      // Trigger Email
+      sendConfirmationEmail(newBooking, slot);
+      
+      res.json({ success: true });
+    } else { res.status(400).json({ success: false }); }
+  } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-export default app; // Required for Vercel
+export default app;
+
+const PORT = 5001;
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`🚀 Server ready at http://localhost:${PORT}`));
+}

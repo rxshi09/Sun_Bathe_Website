@@ -34,6 +34,7 @@ import Testimonials from "./components/Testimonials";
 import Gallery from "./components/Gallery";
 import ProfessionalQA from "./components/ProfessionalQA";
 import Footer from "./components/Footer";
+import VoiceOfTarotAdmin from "./components/VoiceOfTarotAdmin";
 // const Navbar = () => {
 //   const [isOpen, setIsOpen] = React.useState(false);
 // const handleScroll = (e) => {
@@ -223,10 +224,11 @@ function App() {
       <VoiceOfTarotOfferings />
       <Testimonials />
       <Gallery />
-
+      {/* <VoiceOfTarotAdmin/> */}
       {/* <PaymentSection /> */}
       <ProfessionalQA />
       <Footer />
+      
     </div>
   );
 }
