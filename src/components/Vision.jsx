@@ -19,9 +19,9 @@ const WhatIsSoundOfTarot = () => {
       icon: <Wind className="w-6 h-6 text-stone-800" strokeWidth={1.2} />,
     },
   ];
-
+  
   return (
-    <section id="about" className="py-24 bg-[#FDFCFB]">
+    <section id="vision" className="py-24 bg-[#FDFCFB]">
       <div className="px-6 mx-auto max-w-7xl lg:px-12">
         
         {/* Header Section */}
@@ -50,7 +50,7 @@ const WhatIsSoundOfTarot = () => {
             </div>
           </div>
         </div>
-
+        
         {/* Pillars Grid */}
         <div className="grid gap-8 md:grid-cols-3">
           {pillars.map((pillar, i) => (

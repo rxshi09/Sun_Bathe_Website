@@ -62,10 +62,10 @@ const Navbar = () => {
             ))}
             
             <button
-              onClick={(e) => scrollToSection(e, 'offerings')}
+              onClick={() => window.location.href = "/admin"}
               className="px-8 py-3 text-white transition-all duration-300 bg-stone-900 hover:bg-stone-800"
             >
-              Reserve Seat
+              Admin Portal
             </button>
           </div>
           

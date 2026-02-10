@@ -80,11 +80,11 @@ const Hero = () => {
             </motion.div>
           </AnimatePresence>
 
-          <button className="flex items-center gap-6 group">
+          <button  className="flex items-center gap-6 group">
             <span className="text-xs uppercase tracking-[0.3em] font-bold text-stone-800 border-b border-transparent group-hover:border-stone-800 transition-all duration-300 pb-1">
               {SLIDES[index].cta}
             </span>
-            <div className="p-3 transition-all duration-500 border rounded-full border-stone-200 group-hover:bg-stone-900 group-hover:text-white group-hover:rotate-45">
+            <div  className="p-3 transition-all duration-500 border rounded-full border-stone-200 group-hover:bg-stone-900 group-hover:text-white group-hover:rotate-45">
               <ArrowUpRight size={16} />
             </div>
           </button>
