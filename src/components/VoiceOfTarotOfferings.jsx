@@ -474,6 +474,15 @@ const VoiceOfTarotOfferings = () => {
 
             {/* Right Column: Dynamic Steps */}
             <div className="flex-1 bg-[#FAF9F6] p-8 md:p-20 overflow-y-auto">
+              <button
+                  onClick={handleClose}
+                  className="left-0 flex items-center gap-3 p-5 -mt-12 transition-colors md:hidden m mt text-stone-500 group"
+                >
+                  <X size={18} />
+                  <span className="text-[10px] tracking-[0.3em] uppercase font-bold">
+                    Cancel Booking
+                  </span>
+                </button>
               {!paymentSuccess ? (
                 <div className="max-w-xl mx-auto">
                   {/* Progress Indicator */}
