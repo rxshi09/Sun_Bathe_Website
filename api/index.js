@@ -190,14 +190,55 @@ const Slot = mongoose.models.Slot || mongoose.model('Slot', slotSchema);
 const Booking = mongoose.models.Booking || mongoose.model('Booking', bookingSchema);
 
 // --- 2. DB CONNECTION ---
-const connectDB = async () => {
-  if (mongoose.connection.readyState >= 1) return;
-  try {
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log("🌿 MongoDB Connected");
-  } catch (err) { 
-    console.error("❌ MongoDB Error:", err); 
-    process.exit(1);
+const connectDB = async (retries = 5) => {
+  if (mongoose.connection.readyState >= 1) {
+    console.log("🌿 MongoDB Already Connected");
+    return;
+  }
+
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`🔄 Attempting MongoDB connection (attempt ${attempt}/${retries})...`);
+      
+      await mongoose.connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+        socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+        maxPoolSize: 10, // Maintain up to 10 socket connections
+        bufferCommands: false, // Disable mongoose buffering
+      });
+
+      console.log("✅ MongoDB Connected Successfully");
+      
+      // Handle connection events
+      mongoose.connection.on('error', (err) => {
+        console.error('❌ MongoDB Connection Error:', err);
+      });
+      
+      mongoose.connection.on('disconnected', () => {
+        console.log('⚠️  MongoDB Disconnected');
+      });
+      
+      mongoose.connection.on('reconnected', () => {
+        console.log('🔄 MongoDB Reconnected');
+      });
+
+      return; // Success, exit the retry loop
+
+    } catch (err) {
+      console.error(`❌ MongoDB Connection Failed (attempt ${attempt}/${retries}):`, err.message);
+      
+      if (attempt === retries) {
+        console.error("🚨 All MongoDB connection attempts failed. Server will start without DB connection.");
+        console.error("💡 Check your MONGODB_URI in .env or ensure MongoDB is running locally/Atlas is active.");
+        // Don't exit process - let server start, but DB operations will fail
+        return;
+      }
+      
+      // Exponential backoff: wait 1s, 2s, 4s, 8s, 16s
+      const delay = Math.pow(2, attempt - 1) * 1000;
+      console.log(`⏳ Retrying in ${delay / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
   }
 };
 
@@ -477,6 +518,7 @@ app.post('/api/admin/create-slots', async (req, res) => {
 
 // Admin: Delete Slot
 app.delete('/api/admin/slots/:id', async (req, res) => {
+  
   await connectDB();
   try {
     const slot = await Slot.findByIdAndDelete(req.params.id);
@@ -497,6 +539,7 @@ app.delete('/api/admin/slots/:id', async (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -506,20 +549,11 @@ app.get('/api/health', (req, res) => {
 
 // --- 7. ERROR HANDLING ---
 app.use((err, req, res, next) => {
+  
   console.error('Unhandled error:', err);
   res.status(500).json({ error: 'Internal server error' });
 });
 
 // --- 8. START SERVER ---
 export default app;
-
-const PORT = process.env.PORT || 5001;
-
-if (process.env.NODE_ENV !== 'production') {
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      console.log(`🚀 Server ready at http://localhost:${PORT}`);
-      console.log(`📊 Admin routes available at /api/admin/*`);
-    });
-  });
-}
+export { connectDB };
